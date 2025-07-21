@@ -2,19 +2,21 @@ const express = require('express');
 const router = express.Router();
 const Application = require('../models/Application');
 
-router.post('/submit', async (req, res) => {
+router.post('/submit-application', async (req, res) => {
     try {
         const {
-            firstName,
-            lastName,
-            email,
-            phoneNumber
-        } = req.body;
-        const application = new Application({
-            firstName,
-            lastName,
+            fullName,
+            dateOfBirth,
             email,
             phoneNumber,
+            gender,
+        } = req.body;
+        const application = new Application({
+            fullName,
+            dateOfBirth,
+            email,
+            phoneNumber,
+            gender,
         });
         await application.save();
         res.status(201).json({ message: 'Application submitted successfully' });
@@ -23,7 +25,7 @@ router.post('/submit', async (req, res) => {
     }
 });
 
-router.get('/applications', async (req, res) => {
+router.get('/get-applications', async (req, res) => {
     try {
         const applications = await Application.find();
         res.status(200).json(applications);
