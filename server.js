@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const uploadRoutes = require('./routes/uploadRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
+const authRoutes = require('./routes/authRoutes');
 const dotenv = require('dotenv');
 dotenv.config({ path: '.env' });
 const connectDB = require('./config/db');
@@ -10,7 +11,7 @@ app.use(cors({ origin: "*" }));
 app.use(express.json());
 const PORT = process.env.PORT || 3001;
 
-const stripe = require("stripe")("sk_test_51RjIueFVHBcv9MBMTsZIZisRZgcc3siuGnBXuUw9NJHDO9hAmsKEYpsaLZnWV35XWTTL7zjeiHdFLgGHCx9Z7M1D00lR3ECrWV");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 // Domain Hosting Account(kartik.er.vit@gmail.com) {https://app.netlify.com/projects/luminous-capybara-aded1d/deploys/687dddcd55631c0caddccfea}
 // cloudinary Account (er.kartik93@gmail.com) {https://console.cloudinary.com/app/c-2057885021e4bb5c1571887d9ac4b3/assets/media_library/search?q=&view_mode=mosaic}
@@ -24,11 +25,12 @@ app.use('/', uploadRoutes);
 
 app.use('/', applicationRoutes);
 
+app.use('/', authRoutes);
+
 app.use((err, req, res, next) => {
     console.log(`[${req.method}] ${req.url}`);
     next();
 });
-
 
 app.get('/', (req, res) => {
   res.send('Server is running');
