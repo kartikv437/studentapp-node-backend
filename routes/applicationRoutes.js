@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Application = require('../models/Application');
+const authMiddleware = require('../middleware/authMiddleware');
 
 router.post('/submit-application', async (req, res) => {
     try {
@@ -19,7 +20,12 @@ router.post('/submit-application', async (req, res) => {
             gender,
         });
         await application.save();
-        res.status(201).json({ message: 'Application submitted successfully' });
+        res.status(201).json(
+            {
+                message: 'Application submitted successfully',
+                status: 'success',
+            }
+        );
     } catch (error) {
         res.status(500).json({ message: 'Error submitting application', error: error.message });
     }

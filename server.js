@@ -10,7 +10,6 @@ const app = express();
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 const PORT = process.env.PORT || 3001;
-
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 // Domain Hosting Account(kartik.er.vit@gmail.com) {https://app.netlify.com/projects/luminous-capybara-aded1d/deploys/687dddcd55631c0caddccfea}
@@ -20,20 +19,20 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 // mongo DB Connection (kartikv437@gmail.com) {https://cloud.mongodb.com/v2/6811a4298f33665f0251b2e4#/metrics/replicaSet/6811a5b3ffd707258c2c9e2e/explorer/sample_mflix/comments/find}
 
 connectDB();
-
 app.use('/', uploadRoutes);
 
 app.use('/', applicationRoutes);
 
-app.use('/', authRoutes);
+app.use('/auth', authRoutes);
 
 app.use((err, req, res, next) => {
-    console.log(`[${req.method}] ${req.url}`);
-    next();
+  console.log(`Error: ${err.message}`);
+  console.log(`[${req.method}] ${req.url}`);
+  next();
 });
 
 app.get('/', (req, res) => {
   res.send('Server is running');
 });
 
-app.listen(PORT, () => console.log(`Server running on port:${PORT}`));
+app.listen(3001, () => console.log(`Server running on port:${PORT}`));
