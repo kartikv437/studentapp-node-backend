@@ -4,10 +4,10 @@ const fileSubSchema = new mongoose.Schema({
   resourceType: String,
   createdAt: Date,
   fileType: String,
-  path: String,
   fileUrl: String,
   displayName: String,
-});
+  url: String,
+}, { _id: false });
 
 const studentDocumentsSchema = new mongoose.Schema({
   studentId: String, // optional if you're tracking user

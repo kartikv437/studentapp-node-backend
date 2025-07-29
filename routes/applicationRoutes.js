@@ -3,7 +3,7 @@ const router = express.Router();
 const Application = require('../models/Application');
 const authMiddleware = require('../middleware/authMiddleware');
 
-router.post('/submit-application', async (req, res) => {
+router.post('/submit-application',authMiddleware, async (req, res) => {
     try {
         const {
             fullName,

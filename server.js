@@ -2,9 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const uploadRoutes = require('./routes/uploadRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
-const authRoutes = require('./routes/authRoutes');
+const authRoutes = require('./auth/auth.routes');
 const dotenv = require('dotenv');
-dotenv.config({ path: '.env' });
+dotenv.config();
 const connectDB = require('./config/db');
 const app = express();
 app.use(cors({ origin: "*" }));
@@ -17,6 +17,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 // Render Account (er.kartik93@gmail.com) {https://dashboard.render.com/web/srv-d1v1crer433s73f80dc0/deploys/dep-d1v1mdje5dus739cqf90}
 // Stripe Account (er.kartik93@gmail.com) {https://dashboard.stripe.com/test/settings/user}
 // mongo DB Connection (kartikv437@gmail.com) {https://cloud.mongodb.com/v2/6811a4298f33665f0251b2e4#/metrics/replicaSet/6811a5b3ffd707258c2c9e2e/explorer/sample_mflix/comments/find}
+// Brevo Account (er.kartik93@gmail.com) {https://app.brevo.com/settings/keys/smtp}
 
 connectDB();
 app.use('/', uploadRoutes);
