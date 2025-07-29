@@ -6,8 +6,8 @@ function parseMinutes(val, fallback = 10) {
 }
 
 module.exports = {
-  port: Number(process.env.PORT) || 3000,
-  mongoUri: process.env.MONGO_URI,
+  port: Number(process.env.PORT) || 3001,
+  mongoUri: process.env.REACT_APP_MONGODB,
   brevoApiKey: process.env.BREVO_API_KEY,
   jwtSecret: process.env.JWT_SECRET,
   otpTtlMinutes: parseMinutes(process.env.OTP_TTL_MINUTES, 10),
