@@ -3,8 +3,7 @@ const cors = require('cors');
 const uploadRoutes = require('./routes/uploadRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
 const authRoutes = require('./auth/auth.routes');
-const dotenv = require('dotenv');
-dotenv.config({ path: './.env' });
+require('dotenv').config();
 const connectDB = require('./config/db');
 const app = express();
 app.use(cors({ origin: "*" }));
@@ -36,4 +35,4 @@ app.get('/', (req, res) => {
   res.send('Server is running');
 });
 
-app.listen(3001, () => console.log(`Server running on port:${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port:${PORT}`));
