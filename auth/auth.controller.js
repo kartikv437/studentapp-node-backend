@@ -29,6 +29,7 @@ exports.signup = async (req, res) => {
     await user.save();
   }
   console.log('USER CREATED:', user);
+  
   const otp = generateOtp();
   const expiresAt = new Date(Date.now() + otpTtlMinutes * 60 * 1000);
 
