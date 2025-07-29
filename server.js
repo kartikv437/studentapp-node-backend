@@ -31,6 +31,13 @@ app.use((err, req, res, next) => {
   next();
 });
 
+app.get('/debug/env', (req, res) => {
+  res.json({
+    brevoKeyPresent: !!process.env.BREVO_API_KEY,
+    valueLength: process.env.BREVO_API_KEY?.length || 0
+  });
+});
+
 app.get('/', (req, res) => {
   res.send('Server is running');
 });
