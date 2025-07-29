@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: './.env' });
 
 function parseMinutes(val, fallback = 10) {
   const n = parseInt((val ?? '').trim(), 10);

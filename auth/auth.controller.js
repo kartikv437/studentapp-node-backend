@@ -8,18 +8,18 @@ const { generateOtp } = require('../utils/otp');
 const { signupSchema, verifyOtpSchema, resendOtpSchema } = require('./auth.validators');
 
 exports.signup = async (req, res) => {
-    
+
   const parse = signupSchema.safeParse(req.body);
-  
+
   if (!parse.success) return res.status(400).json({ errors: parse.error.flatten() });
   const { email, password } = parse.data;
 
   let user = await User.findOne({ email });
-  
+
   if (user && user.isVerified) {
     return res.status(409).json({ message: 'User already exists and is verified. Please log in.' });
   }
-  
+
   const passwordHash = await bcrypt.hash(password, 10);
 
   if (!user) {
@@ -28,11 +28,11 @@ exports.signup = async (req, res) => {
     user.password = passwordHash;
     await user.save();
   }
-    console.log('USER CREATED:', user);
+  console.log('USER CREATED:', user);
   const otp = generateOtp();
   const expiresAt = new Date(Date.now() + otpTtlMinutes * 60 * 1000);
 
-  await EmailOtp.create({ userId: user._id, code: otp, expiresAt });
+  // await EmailOtp.create({ userId: user._id, code: otp, expiresAt });
   await sendOtpEmail(email, otp);
 
   return res.json({ message: 'OTP sent to your email.', otp: otp });
@@ -43,8 +43,8 @@ exports.verifyOtp = async (req, res) => {
   if (!parse.success) return res.status(400).json({ errors: parse.error.flatten() });
 
   const { email, otp } = parse.data;
-    console.log('VERIFY OTP REQUEST:', req.body);
-    
+  console.log('VERIFY OTP REQUEST:', req.body);
+
   const user = await User.findOne({ email });
   if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -84,7 +84,7 @@ exports.login = async (req, res) => {
 
   const user = await User.findOne({ email });
   console.log('LOGIN REQUEST:', req.body);
-  
+
   if (!user) return res.status(404).json({ message: 'User not found' });
 
   const isMatch = await bcrypt.compare(password, user.password);

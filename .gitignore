@@ -1,0 +1,9 @@
+# Ignore files 
+# Ignore environment variables and secrets
+.env
+*.env
+
+# Node modules and build
+node_modules/
+dist/
+build/

@@ -4,7 +4,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
 const authRoutes = require('./auth/auth.routes');
 const dotenv = require('dotenv');
-dotenv.config();
+dotenv.config({ path: './.env' });
 const connectDB = require('./config/db');
 const app = express();
 app.use(cors({ origin: "*" }));
