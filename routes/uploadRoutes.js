@@ -6,6 +6,7 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 const StudentDocuments = require('../models/StudentDocuments');
+const authMiddleware = require('../middleware/authMiddleware');
 
 // Helper to upload a buffer to cloudinary
 const uploadToCloudinary = (fileBuffer, originalname, folder = 'student-docs') => {
@@ -25,7 +26,7 @@ const uploadToCloudinary = (fileBuffer, originalname, folder = 'student-docs') =
 };
 
 router.post(
-    '/upload',
+    '/upload', authMiddleware,
     upload.fields([
         { name: 'aadhar', maxCount: 1 },
         { name: 'photo', maxCount: 1 },

@@ -17,7 +17,7 @@ exports.signup = async (req, res) => {
   let user = await User.findOne({ email });
 
   if (user && user.isVerified) {
-    return res.status(409).json({ message: 'User already exists and is verified. Please log in.' });
+    return res.status(409).json({ message: 'User already exists and is verified. Please log in.', statusCode: 409 });
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
@@ -28,74 +28,78 @@ exports.signup = async (req, res) => {
     user.password = passwordHash;
     await user.save();
   }
-  console.log('USER CREATED:', user);
-  
+
   const otp = generateOtp();
   const expiresAt = new Date(Date.now() + otpTtlMinutes * 60 * 1000);
 
   await EmailOtp.create({ userId: user._id, code: otp, expiresAt });
-  try{
-     await sendOtpEmail(email, otp);
-  }catch (error) {
-     console.error('Error sending OTP email:', error);
-     return res.status(500).json({ message: 'Error sending OTP email' });
+  try {
+    await sendOtpEmail(email, otp);
+  } catch (error) {
+    console.error('Error sending OTP email:', error);
+    return res.status(500).json({ message: 'Error sending OTP email' });
   }
- 
-  return res.json({ message: 'OTP sent to your email.', otp: otp });
+
+  return res.json({ message: 'OTP sent to your email.', otp: otp, statusCode: 200 });
 };
 
 exports.verifyOtp = async (req, res) => {
+
   const parse = verifyOtpSchema.safeParse(req.body);
-  if (!parse.success) return res.status(400).json({ errors: parse.error.flatten() });
+  if (!parse.success) return res.status(400).json({ errors: parse.error.flatten(), message: 'Invalid OTP' });
 
-  const { email, otp } = parse.data;
-  console.log('VERIFY OTP REQUEST:', req.body);
+  const { otp } = req.body;
+  if (!otp) return res.status(400).json({ message: 'OTP is required' });
 
-  const user = await User.findOne({ email });
-  if (!user) return res.status(404).json({ message: 'User not found' });
+  const latestOtp = await EmailOtp.findOne({ code: otp, used: false }).sort({ createdAt: -1 });
+  if (!latestOtp) return res.status(400).json({ message: 'Invalid or expired OTP', statusCode: 400 });
+  if (latestOtp.expiresAt < new Date()) return res.status(400).json({ message: 'OTP expired', statusCode: 400 });
 
-  const latestOtp = await EmailOtp.findOne({ userId: user._id, used: false }).sort({ createdAt: -1 });
-  if (!latestOtp) return res.status(400).json({ message: 'No OTP found. Please request a new one.' });
-  if (latestOtp.code !== otp) return res.status(400).json({ message: 'Invalid OTP' });
-  if (latestOtp.expiresAt < new Date()) return res.status(400).json({ message: 'OTP expired' });
+  const user = await User.findById(latestOtp.userId);
+  if (!user) return res.status(404).json({ message: 'User not found', statusCode: 404 });
 
   latestOtp.used = true;
   await latestOtp.save();
+
   user.isVerified = true;
   await user.save();
 
   const token = jwt.sign({ sub: user._id, email: user.email }, jwtSecret, { expiresIn: '7d' });
-  return res.json({ message: 'OTP verified, signup complete', token });
+  return res.json({ message: 'OTP verified, signup complete', result: { accessToken: token, email: user.email }, statusCode: 200 });
 };
 
 exports.resendOtp = async (req, res) => {
   const parse = resendOtpSchema.safeParse(req.body);
-  if (!parse.success) return res.status(400).json({ errors: parse.error.flatten() });
+  if (!parse.success) return res.status(400).json({ errors: parse.error.flatten(), statusCode: 400 });
 
   const { email } = parse.data;
   const user = await User.findOne({ email });
-  if (!user) return res.status(404).json({ message: 'User not found' });
-  if (user.isVerified) return res.status(400).json({ message: 'User already verified' });
+  if (!user) return res.status(404).json({ message: 'User not found', statusCode: 404 });
+  if (user.isVerified) return res.status(400).json({ message: 'User already verified', statusCode: 400 });
 
   const otp = generateOtp();
   const expiresAt = new Date(Date.now() + otpTtlMinutes * 60 * 1000);
   await EmailOtp.create({ userId: user._id, code: otp, expiresAt });
 
   await sendOtpEmail(email, otp);
-  return res.json({ message: 'OTP resent.' });
+  return res.json({ message: 'OTP resent.', otp: otp });
 };
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
-  console.log('LOGIN REQUEST:', req.body);
 
-  if (!user) return res.status(404).json({ message: 'User not found' });
+  if (!user) return res.status(404).json({ message: 'User not found', statusCode: 404 });
 
   const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+  if (!isMatch) return res.status(401).json({ message: 'Invalid credentials', statusCode: 401 });
 
   const token = jwt.sign({ sub: user._id, email: user.email }, jwtSecret, { expiresIn: '7d' });
-  return res.json({ message: 'Login successful', token });
+  return res.json({
+    message: 'Login successful', result: {
+      accessToken: token,
+      email: user.email
+    }, statusCode: 200
+  });
 };

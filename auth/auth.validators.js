@@ -6,7 +6,7 @@ const signupSchema = z.object({
 });
 
 const verifyOtpSchema = z.object({
-  email: z.string().email(),
+  // email: z.string().email(),
   otp: z.string().length(6).regex(/^\d+$/),
 });
 
