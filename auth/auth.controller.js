@@ -34,8 +34,13 @@ exports.signup = async (req, res) => {
   const expiresAt = new Date(Date.now() + otpTtlMinutes * 60 * 1000);
 
   // await EmailOtp.create({ userId: user._id, code: otp, expiresAt });
-  await sendOtpEmail(email, otp);
-
+  try{
+     await sendOtpEmail(email, otp);
+  }catch (error) {
+     console.error('Error sending OTP email:', error);
+     return res.status(500).json({ message: 'Error sending OTP email' });
+  }
+ 
   return res.json({ message: 'OTP sent to your email.', otp: otp });
 };
 
