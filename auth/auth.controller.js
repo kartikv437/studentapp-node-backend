@@ -33,7 +33,7 @@ exports.signup = async (req, res) => {
   const otp = generateOtp();
   const expiresAt = new Date(Date.now() + otpTtlMinutes * 60 * 1000);
 
-  // await EmailOtp.create({ userId: user._id, code: otp, expiresAt });
+  await EmailOtp.create({ userId: user._id, code: otp, expiresAt });
   try{
      await sendOtpEmail(email, otp);
   }catch (error) {
