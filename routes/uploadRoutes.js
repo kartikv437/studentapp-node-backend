@@ -42,7 +42,7 @@ router.post(
             for (const fieldName in req.files) {
                 const file = req.files[fieldName][0];
                 const result = await uploadToCloudinary(file.buffer, file.originalname);
-                
+
                 documentData[fieldName] = {
                     url: result.secure_url,
                     fileType: result.format,
@@ -56,7 +56,7 @@ router.post(
 
             const savedDocument = new StudentDocuments({
                 ...documentData,
-                studentId: req.body.studentId || 'unknown',
+                userId: req.user.id,
             });
 
             await savedDocument.save();
@@ -70,10 +70,54 @@ router.post(
     }
 );
 
-router.get('/getDocs', async (req, res) => {
+router.put('/update-documents', authMiddleware, upload.fields([
+    { name: 'aadhar', maxCount: 1 },
+    { name: 'photo', maxCount: 1 },
+    { name: 'tenth', maxCount: 1 },
+    { name: 'twelfth', maxCount: 1 },
+    { name: 'degree', maxCount: 1 }
+]), async (req, res) => {
+    try {
+
+        const documentData = {};
+        for (const fieldName in req.files) {
+            const file = req.files[fieldName][0];
+            const result = await uploadToCloudinary(file.buffer, file.originalname);
+
+            documentData[fieldName] = {
+                url: result.secure_url,
+                fileType: result.format,
+                uploadedAt: result.created_at,
+                resourceType: result.resource_type,
+                createdAt: result.created_at,
+                fileUrl: result.secure_url,
+                displayName: file.display_name,
+            };
+        }
+
+        const userId = req.user.id;
+        const updatedFiles = await StudentDocuments.findOneAndUpdate(
+            { userId },
+            { $set: documentData }, { new: true, upsert: false }
+        );
+        if (!updatedFiles) {
+            return res.status(404).json({ message: 'No files found' });
+        }
+        res.status(200).json({ message: 'Documents updated successfully' });
+    } catch (err) {
+        res.status(500).json({
+            status: 500,
+            message: 'Internal Server Error',
+            error: err.message,
+            stack: err.stack,
+        });
+    }
+});
+
+router.get('/get-documents', authMiddleware, async (req, res) => {
 
     try {
-        const files = await StudentDocuments.find();
+        const files = await StudentDocuments.findOne({ userId: req.user.id });
         if (!files || files.length === 0) {
             return res.status(404).json({ message: 'No files found' });
         }

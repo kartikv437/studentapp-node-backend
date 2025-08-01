@@ -10,20 +10,19 @@ const { signupSchema, verifyOtpSchema, resendOtpSchema } = require('./auth.valid
 exports.signup = async (req, res) => {
 
   const parse = signupSchema.safeParse(req.body);
-
   if (!parse.success) return res.status(400).json({ errors: parse.error.flatten() });
-  const { email, password } = parse.data;
+  const { email, password, role } = parse.data;
 
   let user = await User.findOne({ email });
 
   if (user && user.isVerified) {
-    return res.status(409).json({ message: 'User already exists and is verified. Please log in.', statusCode: 409 });
+    return res.status(409).json({ message: 'User already exists. Please log in.', statusCode: 409 });
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
 
   if (!user) {
-    user = await User.create({ email, password: passwordHash, isVerified: false });
+    user = await User.create({ email, password: passwordHash, isVerified: false, role });
   } else {
     user.password = passwordHash;
     await user.save();
@@ -32,7 +31,7 @@ exports.signup = async (req, res) => {
   const otp = generateOtp();
   const expiresAt = new Date(Date.now() + otpTtlMinutes * 60 * 1000);
 
-  await EmailOtp.create({ userId: user._id, code: otp, expiresAt });
+  await EmailOtp.create({ id: user._id, code: otp, expiresAt });
   try {
     await sendOtpEmail(email, otp);
   } catch (error) {
@@ -64,7 +63,7 @@ exports.verifyOtp = async (req, res) => {
   user.isVerified = true;
   await user.save();
 
-  const token = jwt.sign({ sub: user._id, email: user.email }, jwtSecret, { expiresIn: '7d' });
+  const token = jwt.sign({ id: user._id }, jwtSecret, { expiresIn: '7d' });
   return res.json({ message: 'OTP verified, signup complete', result: { accessToken: token, email: user.email }, statusCode: 200 });
 };
 
@@ -79,7 +78,7 @@ exports.resendOtp = async (req, res) => {
 
   const otp = generateOtp();
   const expiresAt = new Date(Date.now() + otpTtlMinutes * 60 * 1000);
-  await EmailOtp.create({ userId: user._id, code: otp, expiresAt });
+  await EmailOtp.create({ id: user._id, code: otp, expiresAt });
 
   await sendOtpEmail(email, otp);
   return res.json({ message: 'OTP resent.', otp: otp });
@@ -95,11 +94,12 @@ exports.login = async (req, res) => {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) return res.status(401).json({ message: 'Invalid credentials', statusCode: 401 });
 
-  const token = jwt.sign({ sub: user._id, email: user.email }, jwtSecret, { expiresIn: '7d' });
+  const token = jwt.sign({ id: user._id, role: user.role }, jwtSecret, { expiresIn: '7d' });
   return res.json({
     message: 'Login successful', result: {
       accessToken: token,
-      email: user.email
+      email: user.email,
+      role: user.role
     }, statusCode: 200
   });
 };

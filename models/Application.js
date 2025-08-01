@@ -1,5 +1,10 @@
 const mongoose = require('mongoose');
 const applicationSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', // Reference the User model
+        required: true,
+    },
     fullName: {
         type: String,
         required: true,
@@ -7,11 +12,6 @@ const applicationSchema = new mongoose.Schema({
     dateOfBirth: {
         type: Date,
         required: true,
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
     },
     phoneNumber: {
         type: String,

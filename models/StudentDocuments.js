@@ -10,7 +10,11 @@ const fileSubSchema = new mongoose.Schema({
 }, { _id: false });
 
 const studentDocumentsSchema = new mongoose.Schema({
-  studentId: String, // optional if you're tracking user
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   aadhar: fileSubSchema,
   tenth: fileSubSchema,
   twelfth: fileSubSchema,
