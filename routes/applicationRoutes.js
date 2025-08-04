@@ -57,10 +57,7 @@ router.put('/update-application', authMiddleware, async (req, res) => {
 
 
 router.get('/my-applications', authMiddleware, async (req, res) => {
-  console.log(req.user.id);
   const applications = await Application.findOne({userId:req.user.id});  
-  console.log(applications);
-  
   res.json(applications);
 });
 

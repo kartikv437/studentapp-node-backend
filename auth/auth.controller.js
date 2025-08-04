@@ -54,7 +54,7 @@ exports.verifyOtp = async (req, res) => {
   if (!latestOtp) return res.status(400).json({ message: 'Invalid or expired OTP', statusCode: 400 });
   if (latestOtp.expiresAt < new Date()) return res.status(400).json({ message: 'OTP expired', statusCode: 400 });
 
-  const user = await User.findById(latestOtp.userId);
+  const user = await User.findById(latestOtp.id);
   if (!user) return res.status(404).json({ message: 'User not found', statusCode: 404 });
 
   latestOtp.used = true;
