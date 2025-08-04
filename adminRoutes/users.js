@@ -22,4 +22,20 @@ router.get('/users/:id', authMiddleware, isAdmin, async (req, res) => {
   }
 });
 
+router.delete('/users/:id', authMiddleware, isAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+   
+    const deletedUser = await User.findByIdAndDelete(userId);
+    
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    return res.json({ message: 'User deleted successfully.', statusCode: 200 });
+  } catch (err) {
+    return res.status(500).json({ message: 'Error deleting user.', error: err.message });
+  }
+});
+
 module.exports = router;
