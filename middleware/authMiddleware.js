@@ -10,8 +10,9 @@ const authenticateToken = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id); // 👈 fetch full user
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);    
+    const user = await User.findById(decoded.userId); // 👈 fetch full user
+
     if (!user) {
       return res.status(401).json({ message: 'User not found.' });
     }

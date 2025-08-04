@@ -2,7 +2,7 @@ const { Schema, model, Types } = require('mongoose');
 
 const emailOtpSchema = new Schema(
   {
-    id: { type: Types.ObjectId, ref: 'User', required: true, index: true },
+    userId: { type: Types.ObjectId, ref: 'User', required: true, index: true },
     code: { type: String, required: true },
     expiresAt: { type: Date, required: true, index: true },
     used: { type: Boolean, default: false, index: true },

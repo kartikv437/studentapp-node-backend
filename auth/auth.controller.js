@@ -31,7 +31,7 @@ exports.signup = async (req, res) => {
   const otp = generateOtp();
   const expiresAt = new Date(Date.now() + otpTtlMinutes * 60 * 1000);
 
-  await EmailOtp.create({ id: user._id, code: otp, expiresAt });
+  await EmailOtp.create({ userId: user._id, code: otp, expiresAt });
   try {
     await sendOtpEmail(email, otp);
   } catch (error) {
@@ -54,7 +54,7 @@ exports.verifyOtp = async (req, res) => {
   if (!latestOtp) return res.status(400).json({ message: 'Invalid or expired OTP', statusCode: 400 });
   if (latestOtp.expiresAt < new Date()) return res.status(400).json({ message: 'OTP expired', statusCode: 400 });
 
-  const user = await User.findById(latestOtp.id);
+  const user = await User.findById(latestOtp.userId);
   if (!user) return res.status(404).json({ message: 'User not found', statusCode: 404 });
 
   latestOtp.used = true;
@@ -63,7 +63,7 @@ exports.verifyOtp = async (req, res) => {
   user.isVerified = true;
   await user.save();
 
-  const token = jwt.sign({ id: user._id }, jwtSecret, { expiresIn: '7d' });
+  const token = jwt.sign({ userId: user._id }, jwtSecret, { expiresIn: '7d' });
   return res.json({ message: 'OTP verified, signup complete', result: { accessToken: token, email: user.email }, statusCode: 200 });
 };
 
@@ -78,7 +78,7 @@ exports.resendOtp = async (req, res) => {
 
   const otp = generateOtp();
   const expiresAt = new Date(Date.now() + otpTtlMinutes * 60 * 1000);
-  await EmailOtp.create({ id: user._id, code: otp, expiresAt });
+  await EmailOtp.create({ userId: user._id, code: otp, expiresAt });
 
   await sendOtpEmail(email, otp);
   return res.json({ message: 'OTP resent.', otp: otp });
@@ -94,7 +94,7 @@ exports.login = async (req, res) => {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) return res.status(401).json({ message: 'Invalid credentials', statusCode: 401 });
 
-  const token = jwt.sign({ id: user._id, role: user.role }, jwtSecret, { expiresIn: '7d' });
+  const token = jwt.sign({ userId: user._id, role: user.role }, jwtSecret, { expiresIn: '7d' });
   return res.json({
     message: 'Login successful', result: {
       accessToken: token,
