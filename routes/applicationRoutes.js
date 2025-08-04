@@ -13,7 +13,7 @@ router.post('/submit-application', authMiddleware, async (req, res) => {
     } = req.body;
 
     const application = new Application({
-      userId: req.user.id, 
+      userId: req.user.id,
       fullName,
       dateOfBirth,
       phoneNumber,
@@ -57,7 +57,7 @@ router.put('/update-application', authMiddleware, async (req, res) => {
 
 
 router.get('/my-applications', authMiddleware, async (req, res) => {
-  const applications = await Application.findOne({userId:req.user.id});  
+  const applications = await Application.findOne({ userId: req.user.id });
   res.json(applications);
 });
 
